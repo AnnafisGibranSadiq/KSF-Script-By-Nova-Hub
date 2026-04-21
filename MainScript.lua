@@ -38,12 +38,6 @@ local normalColor = Color3.fromRGB(30, 30, 30)
 local guiDraggable = true
 local killAuraSwings = true
 
-Here is the final, fully merged script with the Mobile-Optimized Dragging and Permanent File Saving system integrated.
-
-I have replaced the old sections and cleaned up the code so you can copy and paste the entire block directly into your mobile executor.
-
-Lua
--- [[ KSF Script By Nova Hub - Mobile Optimized Edition ]] --
 local PathfindingService = game:GetService("PathfindingService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
