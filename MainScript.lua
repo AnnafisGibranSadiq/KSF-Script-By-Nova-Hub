@@ -736,7 +736,7 @@ end)
 
 addExecute("Infinite Yield", "Admin Command Script", function()
 	loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-end, Pages["Others Script"])
+end, Pages["Others"])
 
 LocalPlayer.CharacterAdded:Connect(function() 
 	bv, bg, bav = nil, nil, nil 
