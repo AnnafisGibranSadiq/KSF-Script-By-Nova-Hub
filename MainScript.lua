@@ -232,8 +232,26 @@ createMenuBtn("File")
 createMenuBtn("Others Script")
 createMenuBtn("Settings")
 
+-- ==========================================
+-- PERMANENT SAVING LOGIC (Saves to your PC)
+-- ==========================================
+local HttpService = game:GetService("HttpService")
 local FilePage = Pages["File"]
-local _G_Slots = {} 
+
+-- Function to save all slots to a file
+local function SaveAllToDisk(slotsData)
+    writefile("NovaHub_Slots.json", HttpService:JSONEncode(slotsData))
+end
+
+local function LoadAllFromDisk()
+    if isfile("NovaHub_Slots.json") then
+        local content = readfile("NovaHub_Slots.json")
+        return HttpService:JSONDecode(content)
+    end
+    return {}
+end
+
+local _G_Slots = LoadAllFromDisk()
 
 for i = 1, 5 do
     local slotFrame = Instance.new("Frame", FilePage)
@@ -245,7 +263,7 @@ for i = 1, 5 do
     nameBox.Size = UDim2.new(1, -10, 0, 30)
     nameBox.Position = UDim2.new(0, 10, 0, 5)
     nameBox.BackgroundTransparency = 1
-    nameBox.Text = "Slot " .. i .. " (Click to rename)"
+    nameBox.Text = (_G_Slots[tostring(i)] and _G_Slots[tostring(i)].Name) or "Slot " .. i .. " (Click to rename)"
     nameBox.TextColor3 = Color3.fromRGB(0, 170, 255)
     nameBox.Font = Enum.Font.GothamBold
     nameBox.TextSize = 14
@@ -269,40 +287,26 @@ for i = 1, 5 do
     loadBtn.Font = Enum.Font.GothamBold
     addCorner(loadBtn, 4)
 
-    local resetBtn = Instance.new("TextButton", slotFrame)
-    resetBtn.Size = UDim2.new(0.3, -5, 0, 35)
-    resetBtn.Position = UDim2.new(0.65, 5, 0, 45)
-    resetBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-    resetBtn.Text = "Reset"
-    resetBtn.TextColor3 = Color3.new(1, 1, 1)
-    resetBtn.Font = Enum.Font.GothamBold
-    addCorner(resetBtn, 4)
-
     saveBtn.MouseButton1Click:Connect(function()
         local configName = nameBox.Text
-        _G_Slots[i] = {
+        _G_Slots[tostring(i)] = {
             Data = GetCurrentConfig(),
             Name = configName
         }
+        SaveAllToDisk(_G_Slots) -- Write to PC
         nameBox.TextColor3 = Color3.fromRGB(0, 255, 100)
-        print("Saved: " .. configName)
+        print("Permanently Saved: " .. configName)
     end)
 
     loadBtn.MouseButton1Click:Connect(function()
-        if _G_Slots[i] then
-            LoadConfig(_G_Slots[i].Data)
-            nameBox.Text = _G_Slots[i].Name .. " (LOADED)"
+        if _G_Slots[tostring(i)] then
+            LoadConfig(_G_Slots[tostring(i)].Data)
+            nameBox.Text = _G_Slots[tostring(i)].Name .. " (LOADED)"
             nameBox.TextColor3 = Color3.fromRGB(0, 255, 100)
         else
             nameBox.Text = "No data in Slot " .. i
             nameBox.TextColor3 = Color3.fromRGB(255, 0, 0)
         end
-    end)
-
-    resetBtn.MouseButton1Click:Connect(function()
-        _G_Slots[i] = nil
-        nameBox.Text = "Slot " .. i .. " (Click to rename)"
-        nameBox.TextColor3 = Color3.fromRGB(0, 170, 255)
     end)
 end
 
