@@ -26,8 +26,9 @@ local isSwinging = false
 local playerEspEnabled = false
 local botEspEnabled = false
 
-local clickedYoutube = false
+local clickedYoutube1 = false
 local clickedDiscord = false
+local clickedYoutube2 = false
 local totalClicked = 0
 
 local navButtons = {}
@@ -118,15 +119,19 @@ gui.InputBegan:Connect(function(input)
     end
 end)
 
-gui.InputChanged:Connect(function(input)
+gui.InputBegan:Connect(function(input)
     if not guiDraggable then return end
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging and guiDraggable then
-        local delta = input.Position - dragStart
-        gui.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        local target = UserInputService:GetFocusedTextBox()
+        if target then return end
+        
+        dragging = true
+        dragStart = input.Position
+        startPos = gui.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
     end
 end)
  
@@ -232,7 +237,7 @@ local _G_Slots = {}
 
 for i = 1, 5 do
     local slotFrame = Instance.new("Frame", FilePage)
-    slotFrame.Size = UDim2.new(0.9, 0, 0, 100) -- Made slightly taller for the TextBox
+    slotFrame.Size = UDim2.new(0.9, 0, 0, 100)
     slotFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     addCorner(slotFrame, 8)
 
@@ -241,7 +246,7 @@ for i = 1, 5 do
     nameBox.Position = UDim2.new(0, 10, 0, 5)
     nameBox.BackgroundTransparency = 1
     nameBox.Text = "Slot " .. i .. " (Click to rename)"
-    nameBox.TextColor3 = Color3.fromRGB(0, 170, 255) -- Blue color to show it's clickable
+    nameBox.TextColor3 = Color3.fromRGB(0, 170, 255)
     nameBox.Font = Enum.Font.GothamBold
     nameBox.TextSize = 14
     nameBox.TextXAlignment = Enum.TextXAlignment.Left
@@ -279,7 +284,7 @@ for i = 1, 5 do
             Data = GetCurrentConfig(),
             Name = configName
         }
-        nameBox.TextColor3 = Color3.fromRGB(0, 255, 100) -- Turns green when saved
+        nameBox.TextColor3 = Color3.fromRGB(0, 255, 100)
         print("Saved: " .. configName)
     end)
 
@@ -304,38 +309,38 @@ end
 local HomeHeader = Instance.new("TextLabel", Pages["Home"])
 HomeHeader.Size = UDim2.new(0.9, 0, 0, 40)
 HomeHeader.BackgroundTransparency = 1
-HomeHeader.Text = "Subs To Me And Join To My Discord Server For Vip One!: 0/2"
+HomeHeader.Text = "Subs To Me And Join To My Discord Server For Vip One!: 0/3"
 HomeHeader.TextColor3 = Color3.new(1, 1, 1)
 HomeHeader.Font = Enum.Font.GothamBold
 HomeHeader.TextSize = 14
 HomeHeader.TextWrapped = true
 
 local function updateCounter()
-    totalClicked = (clickedYoutube and 1 or 0) + (clickedDiscord and 1 or 0)
-    HomeHeader.Text = "Subs To Me And Join To My Discord Server For Vip One!: " .. totalClicked .. "/2"
+    totalClicked = (clickedYoutube1 and 1 or 0) + (clickedDiscord and 1 or 0) + (clickedYoutube2 and 1 or 0)
+    HomeHeader.Text = "Subs To YepImDarkNova, Rafli_182 And Join To My Discord Server For Vip One!: " .. totalClicked .. "/3"
 end
 
-local ytBtn = Instance.new("TextButton", Pages["Home"])
-ytBtn.Size = UDim2.new(0.9, 0, 0, 40)
-ytBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-ytBtn.Text = "YouTube: YepImDarkNova"
-ytBtn.TextColor3 = Color3.new(1, 1, 1)
-ytBtn.Font = Enum.Font.GothamBold
-addCorner(ytBtn, 6)
+local ytBtn1 = Instance.new("TextButton", Pages["Home"])
+ytBtn1.Size = UDim2.new(0.9, 0, 0, 40)
+ytBtn1.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+ytBtn1.Text = "YouTube: YepImDarkNova"
+ytBtn1.TextColor3 = Color3.new(1, 1, 1)
+ytBtn1.Font = Enum.Font.GothamBold
+addCorner(ytBtn1, 6)
 
-ytBtn.MouseButton1Click:Connect(function()
+ytBtn1.MouseButton1Click:Connect(function()
     setclipboard("https://www.youtube.com/@YepImDarkNova")
-    if not clickedYoutube then
-        clickedYoutube = true
+    if not clickedYoutube1 then
+        clickedYoutube1 = true
         updateCounter()
     end
-    print("YouTube Link Copied to Clipboard!")
+    print("YouTube 1 Link Copied!")
 end)
 
 local dcBtn = Instance.new("TextButton", Pages["Home"])
 dcBtn.Size = UDim2.new(0.9, 0, 0, 40)
 dcBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
-dcBtn.Text = "Join Discord Server"
+dcBtn.Text = "Discord: Nova's Dumb Server"
 dcBtn.TextColor3 = Color3.new(1, 1, 1)
 dcBtn.Font = Enum.Font.GothamBold
 addCorner(dcBtn, 6)
@@ -346,24 +351,24 @@ dcBtn.MouseButton1Click:Connect(function()
         clickedDiscord = true
         updateCounter()
     end
-    print("Discord Link Copied to Clipboard!")
+    print("Discord Link Copied!")
 end)
 
 local ytBtn2 = Instance.new("TextButton", Pages["Home"])
-ytBtn.Size = UDim2.new(0.9, 0, 0, 40)
-ytBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-ytBtn.Text = "YouTube: Rafli_182"
-ytBtn.TextColor3 = Color3.new(1, 1, 1)
-ytBtn.Font = Enum.Font.GothamBold
-addCorner(ytBtn, 6)
+ytBtn2.Size = UDim2.new(0.9, 0, 0, 40)
+ytBtn2.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+ytBtn2.Text = "YouTube: Rafli_182"
+ytBtn2.TextColor3 = Color3.new(1, 1, 1)
+ytBtn2.Font = Enum.Font.GothamBold
+addCorner(ytBtn2, 6)
 
-ytBtn.MouseButton1Click:Connect(function()
+ytBtn2.MouseButton1Click:Connect(function()
     setclipboard("https://www.youtube.com/@Rafli_182")
-    if not clickedYoutube then
-        clickedYoutube = true
+    if not clickedYoutube2 then
+        clickedYoutube2 = true
         updateCounter()
     end
-    print("YouTube Link Copied to Clipboard!")
+    print("YouTube 2 Link Copied!")
 end)
  
 local function addExecute(name, description, callback, parentPage)
