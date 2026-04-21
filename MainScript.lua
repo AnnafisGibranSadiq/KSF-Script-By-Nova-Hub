@@ -228,35 +228,36 @@ createMenuBtn("Others Script")
 createMenuBtn("Settings")
 
 local FilePage = Pages["File"]
-local _G_Slots = {} -- Temporary storage if readfile/writefile isn't used
+local _G_Slots = {} 
 
 for i = 1, 5 do
     local slotFrame = Instance.new("Frame", FilePage)
-    slotFrame.Size = UDim2.new(0.9, 0, 0, 80)
+    slotFrame.Size = UDim2.new(0.9, 0, 0, 100) -- Made slightly taller for the TextBox
     slotFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     addCorner(slotFrame, 8)
 
-    local slotTitle = Instance.new("TextLabel", slotFrame)
-    slotTitle.Size = UDim2.new(1, -10, 0, 25)
-    slotTitle.Position = UDim2.new(0, 10, 0, 5)
-    slotTitle.BackgroundTransparency = 1
-    slotTitle.Text = "Slot " .. i .. ": Empty"
-    slotTitle.TextColor3 = Color3.new(1, 1, 1)
-    slotTitle.Font = Enum.Font.GothamBold
-    slotTitle.TextXAlignment = Enum.TextXAlignment.Left
+    local nameBox = Instance.new("TextBox", slotFrame)
+    nameBox.Size = UDim2.new(1, -10, 0, 30)
+    nameBox.Position = UDim2.new(0, 10, 0, 5)
+    nameBox.BackgroundTransparency = 1
+    nameBox.Text = "Slot " .. i .. " (Click to rename)"
+    nameBox.TextColor3 = Color3.fromRGB(0, 170, 255) -- Blue color to show it's clickable
+    nameBox.Font = Enum.Font.GothamBold
+    nameBox.TextSize = 14
+    nameBox.TextXAlignment = Enum.TextXAlignment.Left
 
     local saveBtn = Instance.new("TextButton", slotFrame)
-    saveBtn.Size = UDim2.new(0.3, -5, 0, 30)
-    saveBtn.Position = UDim2.new(0, 5, 0, 40)
+    saveBtn.Size = UDim2.new(0.3, -5, 0, 35)
+    saveBtn.Position = UDim2.new(0, 5, 0, 45)
     saveBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
-    saveBtn.Text = "Save"
+    saveBtn.Text = "Save Config"
     saveBtn.TextColor3 = Color3.new(1, 1, 1)
     saveBtn.Font = Enum.Font.GothamBold
     addCorner(saveBtn, 4)
 
     local loadBtn = Instance.new("TextButton", slotFrame)
-    loadBtn.Size = UDim2.new(0.3, -5, 0, 30)
-    loadBtn.Position = UDim2.new(0.35, 0, 0, 40)
+    loadBtn.Size = UDim2.new(0.3, -5, 0, 35)
+    loadBtn.Position = UDim2.new(0.35, 0, 0, 45)
     loadBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
     loadBtn.Text = "Load"
     loadBtn.TextColor3 = Color3.new(1, 1, 1)
@@ -264,8 +265,8 @@ for i = 1, 5 do
     addCorner(loadBtn, 4)
 
     local resetBtn = Instance.new("TextButton", slotFrame)
-    resetBtn.Size = UDim2.new(0.3, -5, 0, 30)
-    resetBtn.Position = UDim2.new(0.65, 5, 0, 40)
+    resetBtn.Size = UDim2.new(0.3, -5, 0, 35)
+    resetBtn.Position = UDim2.new(0.65, 5, 0, 45)
     resetBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
     resetBtn.Text = "Reset"
     resetBtn.TextColor3 = Color3.new(1, 1, 1)
@@ -273,22 +274,30 @@ for i = 1, 5 do
     addCorner(resetBtn, 4)
 
     saveBtn.MouseButton1Click:Connect(function()
-        _G_Slots[i] = GetCurrentConfig()
-        slotTitle.Text = "Slot " .. i .. ": KillAura And Others"
+        local configName = nameBox.Text
+        _G_Slots[i] = {
+            Data = GetCurrentConfig(),
+            Name = configName
+        }
+        nameBox.TextColor3 = Color3.fromRGB(0, 255, 100) -- Turns green when saved
+        print("Saved: " .. configName)
     end)
 
     loadBtn.MouseButton1Click:Connect(function()
         if _G_Slots[i] then
-            LoadConfig(_G_Slots[i])
-            slotTitle.Text = "Slot " .. i .. ": LOADED"
+            LoadConfig(_G_Slots[i].Data)
+            nameBox.Text = _G_Slots[i].Name .. " (LOADED)"
+            nameBox.TextColor3 = Color3.fromRGB(0, 255, 100)
         else
-            slotTitle.Text = "Slot " .. i .. ": NO DATA"
+            nameBox.Text = "No data in Slot " .. i
+            nameBox.TextColor3 = Color3.fromRGB(255, 0, 0)
         end
     end)
 
     resetBtn.MouseButton1Click:Connect(function()
         _G_Slots[i] = nil
-        slotTitle.Text = "Slot " .. i .. ": Empty"
+        nameBox.Text = "Slot " .. i .. " (Click to rename)"
+        nameBox.TextColor3 = Color3.fromRGB(0, 170, 255)
     end)
 end
 
