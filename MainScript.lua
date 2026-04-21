@@ -38,8 +38,47 @@ local normalColor = Color3.fromRGB(30, 30, 30)
 local guiDraggable = true
 local killAuraSwings = true
 
+Here is the final, fully merged script with the Mobile-Optimized Dragging and Permanent File Saving system integrated.
+
+I have replaced the old sections and cleaned up the code so you can copy and paste the entire block directly into your mobile executor.
+
+Lua
+-- [[ KSF Script By Nova Hub - Mobile Optimized Edition ]] --
+local PathfindingService = game:GetService("PathfindingService")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
-local ConfigFile = "NovaHub_Config.json"
+local LocalPlayer = Players.LocalPlayer
+
+local killAuraEnabled = false
+local killAuraRange = 0
+local auraSphere = nil
+local autoClickerEnabled = false
+
+local walkSpeedEnabled, jumpPowerEnabled = false, false
+local flyEnabled, spinEnabled = false, false
+local targetSpeed, targetJump = 16, 50
+local targetFlySpeed, targetSpinSpeed = 15, 35
+
+local autoSwordEnabled = false
+local autoBotEnabled, autoPlayerEnabled = false, false
+local noclipEnabled, antiVoidEnabled = false, false
+
+local damageAmpEnabled = false
+local ampRotateSpeed = 0
+local playerEspEnabled = false
+local botEspEnabled = false
+
+local navButtons = {}
+local activeColor = Color3.fromRGB(0, 170, 255)
+local normalColor = Color3.fromRGB(30, 30, 30)
+
+local guiDraggable = true
+local killAuraSwings = true
+
+local ConfigFileName = "NovaHub_Mobile_Slots.json"
 
 local function GetCurrentConfig()
     return {
@@ -62,13 +101,26 @@ local function LoadConfig(data)
     noclipEnabled = data.misc.noclip
     antiVoidEnabled = data.misc.antiVoid
     guiDraggable = data.misc.draggable
-    print("Config Loaded!")
 end
+
+local function SaveToDisk(data)
+    local success, err = pcall(function()
+        writefile(ConfigFileName, HttpService:JSONEncode(data))
+    end)
+    if not success then warn("Save failed: " .. tostring(err)) end
+end
+
+local function LoadFromDisk()
+    if isfile and isfile(ConfigFileName) then
+        local success, content = pcall(function() return readfile(ConfigFileName) end)
+        if success then return HttpService:JSONDecode(content) end
+    end
+    return {}
+end
+
+local _G_Slots = LoadFromDisk()
  
 local GuiParent = LocalPlayer:WaitForChild("PlayerGui") 
- 
-local HttpService = game:GetService("HttpService")
-local ConfigFile = "NovaHub_Config.json"
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "KSF_NovaHub"
@@ -105,33 +157,29 @@ ToggleButton.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
  
-local gui = MainFrame
 local dragging, dragInput, dragStart, startPos
-gui.InputBegan:Connect(function(input)
-    if not guiDraggable then return end -- This stops dragging if set to False
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = gui.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then dragging = false end
-        end)
-    end
-end)
-
-gui.InputBegan:Connect(function(input)
+MainFrame.InputBegan:Connect(function(input)
     if not guiDraggable then return end
-    
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         local target = UserInputService:GetFocusedTextBox()
         if target then return end
         
         dragging = true
         dragStart = input.Position
-        startPos = gui.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then dragging = false end
-        end)
+        startPos = MainFrame.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
     end
 end)
  
@@ -232,28 +280,8 @@ createMenuBtn("File")
 createMenuBtn("Others Script")
 createMenuBtn("Settings")
 
--- ==========================================
--- PERMANENT SAVING LOGIC (Saves to your PC)
--- ==========================================
-local HttpService = game:GetService("HttpService")
-local FilePage = Pages["File"]
-
--- Function to save all slots to a file
-local function SaveAllToDisk(slotsData)
-    writefile("NovaHub_Slots.json", HttpService:JSONEncode(slotsData))
-end
-
-local function LoadAllFromDisk()
-    if isfile("NovaHub_Slots.json") then
-        local content = readfile("NovaHub_Slots.json")
-        return HttpService:JSONDecode(content)
-    end
-    return {}
-end
-
-local _G_Slots = LoadAllFromDisk()
-
 for i = 1, 5 do
+    local slotKey = tostring(i)
     local slotFrame = Instance.new("Frame", FilePage)
     slotFrame.Size = UDim2.new(0.9, 0, 0, 100)
     slotFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
@@ -263,7 +291,7 @@ for i = 1, 5 do
     nameBox.Size = UDim2.new(1, -10, 0, 30)
     nameBox.Position = UDim2.new(0, 10, 0, 5)
     nameBox.BackgroundTransparency = 1
-    nameBox.Text = (_G_Slots[tostring(i)] and _G_Slots[tostring(i)].Name) or "Slot " .. i .. " (Click to rename)"
+    nameBox.Text = (_G_Slots[slotKey] and _G_Slots[slotKey].Name) or "Slot " .. i .. " (Click to rename)"
     nameBox.TextColor3 = Color3.fromRGB(0, 170, 255)
     nameBox.Font = Enum.Font.GothamBold
     nameBox.TextSize = 14
@@ -288,23 +316,17 @@ for i = 1, 5 do
     addCorner(loadBtn, 4)
 
     saveBtn.MouseButton1Click:Connect(function()
-        local configName = nameBox.Text
-        _G_Slots[tostring(i)] = {
-            Data = GetCurrentConfig(),
-            Name = configName
-        }
-        SaveAllToDisk(_G_Slots) -- Write to PC
+        _G_Slots[slotKey] = {Data = GetCurrentConfig(), Name = nameBox.Text}
+        SaveToDisk(_G_Slots)
         nameBox.TextColor3 = Color3.fromRGB(0, 255, 100)
-        print("Permanently Saved: " .. configName)
     end)
 
     loadBtn.MouseButton1Click:Connect(function()
-        if _G_Slots[tostring(i)] then
-            LoadConfig(_G_Slots[tostring(i)].Data)
-            nameBox.Text = _G_Slots[tostring(i)].Name .. " (LOADED)"
+        if _G_Slots[slotKey] then
+            LoadConfig(_G_Slots[slotKey].Data)
+            nameBox.Text = _G_Slots[slotKey].Name .. " (LOADED)"
             nameBox.TextColor3 = Color3.fromRGB(0, 255, 100)
         else
-            nameBox.Text = "No data in Slot " .. i
             nameBox.TextColor3 = Color3.fromRGB(255, 0, 0)
         end
     end)
