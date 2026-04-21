@@ -36,9 +36,39 @@ local normalColor = Color3.fromRGB(30, 30, 30)
 
 local guiDraggable = true
 local killAuraSwings = true
+
+local HttpService = game:GetService("HttpService")
+local ConfigFile = "NovaHub_Config.json"
+
+local function GetCurrentConfig()
+    return {
+        walkSpeed = {enabled = walkSpeedEnabled, val = targetSpeed},
+        jumpPower = {enabled = jumpPowerEnabled, val = targetJump},
+        killAura = {enabled = killAuraEnabled, range = killAuraRange, swings = killAuraSwings},
+        esp = {players = playerEspEnabled, bots = botEspEnabled},
+        misc = {noclip = noclipEnabled, antiVoid = antiVoidEnabled, draggable = guiDraggable}
+    }
+end
+
+local function LoadConfig(data)
+    walkSpeedEnabled = data.walkSpeed.enabled
+    targetSpeed = data.walkSpeed.val
+    killAuraEnabled = data.killAura.enabled
+    killAuraRange = data.killAura.range
+    killAuraSwings = data.killAura.swings
+    playerEspEnabled = data.esp.players
+    botEspEnabled = data.esp.bots
+    noclipEnabled = data.misc.noclip
+    antiVoidEnabled = data.misc.antiVoid
+    guiDraggable = data.misc.draggable
+    print("Config Loaded!")
+end
  
 local GuiParent = LocalPlayer:WaitForChild("PlayerGui") 
  
+local HttpService = game:GetService("HttpService")
+local ConfigFile = "NovaHub_Config.json"
+
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "KSF_NovaHub"
 ScreenGui.ResetOnSpawn = false
@@ -63,7 +93,7 @@ local ToggleButton = Instance.new("TextButton")
 ToggleButton.Size = UDim2.new(0, 100, 0, 40)
 ToggleButton.Position = UDim2.new(0, 10, 0.5, -20)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-ToggleButton.Text = "NH"
+ToggleButton.Text = "NH draggable"
 ToggleButton.TextColor3 = Color3.new(1, 1, 1)
 ToggleButton.Font = Enum.Font.GothamBold
 ToggleButton.Parent = ScreenGui
@@ -196,6 +226,71 @@ createMenuBtn("Auto")
 createMenuBtn("File")
 createMenuBtn("Others Script")
 createMenuBtn("Settings")
+
+local FilePage = Pages["File"]
+local _G_Slots = {} -- Temporary storage if readfile/writefile isn't used
+
+for i = 1, 5 do
+    local slotFrame = Instance.new("Frame", FilePage)
+    slotFrame.Size = UDim2.new(0.9, 0, 0, 80)
+    slotFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    addCorner(slotFrame, 8)
+
+    local slotTitle = Instance.new("TextLabel", slotFrame)
+    slotTitle.Size = UDim2.new(1, -10, 0, 25)
+    slotTitle.Position = UDim2.new(0, 10, 0, 5)
+    slotTitle.BackgroundTransparency = 1
+    slotTitle.Text = "Slot " .. i .. ": Empty"
+    slotTitle.TextColor3 = Color3.new(1, 1, 1)
+    slotTitle.Font = Enum.Font.GothamBold
+    slotTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+    local saveBtn = Instance.new("TextButton", slotFrame)
+    saveBtn.Size = UDim2.new(0.3, -5, 0, 30)
+    saveBtn.Position = UDim2.new(0, 5, 0, 40)
+    saveBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+    saveBtn.Text = "Save"
+    saveBtn.TextColor3 = Color3.new(1, 1, 1)
+    saveBtn.Font = Enum.Font.GothamBold
+    addCorner(saveBtn, 4)
+
+    local loadBtn = Instance.new("TextButton", slotFrame)
+    loadBtn.Size = UDim2.new(0.3, -5, 0, 30)
+    loadBtn.Position = UDim2.new(0.35, 0, 0, 40)
+    loadBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+    loadBtn.Text = "Load"
+    loadBtn.TextColor3 = Color3.new(1, 1, 1)
+    loadBtn.Font = Enum.Font.GothamBold
+    addCorner(loadBtn, 4)
+
+    local resetBtn = Instance.new("TextButton", slotFrame)
+    resetBtn.Size = UDim2.new(0.3, -5, 0, 30)
+    resetBtn.Position = UDim2.new(0.65, 5, 0, 40)
+    resetBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+    resetBtn.Text = "Reset"
+    resetBtn.TextColor3 = Color3.new(1, 1, 1)
+    resetBtn.Font = Enum.Font.GothamBold
+    addCorner(resetBtn, 4)
+
+    saveBtn.MouseButton1Click:Connect(function()
+        _G_Slots[i] = GetCurrentConfig()
+        slotTitle.Text = "Slot " .. i .. ": KillAura And Others"
+    end)
+
+    loadBtn.MouseButton1Click:Connect(function()
+        if _G_Slots[i] then
+            LoadConfig(_G_Slots[i])
+            slotTitle.Text = "Slot " .. i .. ": LOADED"
+        else
+            slotTitle.Text = "Slot " .. i .. ": NO DATA"
+        end
+    end)
+
+    resetBtn.MouseButton1Click:Connect(function()
+        _G_Slots[i] = nil
+        slotTitle.Text = "Slot " .. i .. ": Empty"
+    end)
+end
 
 local HomeHeader = Instance.new("TextLabel", Pages["Home"])
 HomeHeader.Size = UDim2.new(0.9, 0, 0, 40)
