@@ -236,8 +236,8 @@ local FunPage = createPage("Fun")
 local ESPPage = createPage("ESP")
 local AutoPage = createPage("Auto")
 createPage("Home")
-createPage("File")
-createPage("Others")
+local FilePage = createPage("File")
+local OthersPage = createPage("Others")
 createPage("Settings")
 LPPage.Visible = true
  
