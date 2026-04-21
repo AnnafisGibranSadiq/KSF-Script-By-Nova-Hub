@@ -241,12 +241,12 @@ local OthersPage = createPage("Others")
 createPage("Settings")
 LPPage.Visible = true
  
-local function createMenuBtn(name)
+local function createMenuBtn(name, isDefault)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(0.9, 0, 0, 30)
-    btn.BackgroundColor3 = normalColor
+    btn.BackgroundColor3 = isDefault and activeColor or normalColor -- Sets Home color on start
     btn.Text = name
-    btn.TextColor3 = Color3.new(0.8, 0.8, 0.8)
+    btn.TextColor3 = Color3.new(1, 1, 1)
     btn.Font = Enum.Font.GothamBold
     btn.Parent = NavBar
     addCorner(btn, 6)
@@ -254,19 +254,15 @@ local function createMenuBtn(name)
     navButtons[name] = btn
 
     btn.MouseButton1Click:Connect(function()
-        local target = (name == "Others Script") and "Others" or name
+        -- Handle the "Others Script" vs "Others" name difference
+        local targetName = (name == "Others Script") and "Others" or name
         
-        for _, b in pairs(navButtons) do
-            b.BackgroundColor3 = normalColor
-        end
-        
-        for _, p in pairs(Pages) do
-            p.Visible = false
-        end
+        for _, b in pairs(navButtons) do b.BackgroundColor3 = normalColor end
+        for _, p in pairs(Pages) do p.Visible = false end
         
         btn.BackgroundColor3 = activeColor
-        if Pages[target] then
-            Pages[target].Visible = true
+        if Pages[targetName] then
+            Pages[targetName].Visible = true
         end
     end)
 end
@@ -279,6 +275,12 @@ createMenuBtn("Auto")
 createMenuBtn("File")
 createMenuBtn("Others Script")
 createMenuBtn("Settings")
+
+for _, page in pairs(Pages) do
+    page.Visible = false
+end
+Pages["Home"].Visible = true
+MainFrame.Visible = false
 
 for i = 1, 5 do
     local slotKey = tostring(i)
@@ -781,7 +783,7 @@ end)
 
 addExecute("Infinite Yield", "Admin Command Script", function()
     loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-end, Pages["Others"])
+end, Pages["Others Script"])
 
 LocalPlayer.CharacterAdded:Connect(function() 
     bv, bg, bav = nil, nil, nil 
